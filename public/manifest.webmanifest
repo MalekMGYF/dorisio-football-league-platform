@@ -1,0 +1,40 @@
+{
+  "name": "دوريسيو — دوريكم بشكل حقيقي",
+  "short_name": "دوريسيو",
+  "description": "منصة دوري كرة القدم الحقيقية: جداول، مباريات مباشرة، إحصائيات، جوائز.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A0E0C",
+  "theme_color": "#0A0E0C",
+  "categories": ["sports", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "مركز المباريات المباشرة",
+      "short_name": "مباشر",
+      "url": "/matches"
+    },
+    {
+      "name": "جدول الترتيب",
+      "short_name": "الترتيب",
+      "url": "/table"
+    }
+  ]
+}
