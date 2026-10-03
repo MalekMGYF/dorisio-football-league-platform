@@ -33,7 +33,6 @@ export async function createSession(userId: string): Promise<void> {
   const token = randomBytes(32).toString("base64url");
   const sessionId = hashToken(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-
   // يوجد Session واحدة فقط لكل مستخدم.
   // عند تسجيل الدخول مرة أخرى نحدّث الجلسة القديمة بدل إنشاء جلسة ثانية.
   await db
@@ -51,7 +50,6 @@ export async function createSession(userId: string): Promise<void> {
         lastSeenAt: new Date(),
       },
     });
-
   const jar = await cookies();
 
   jar.set(SESSION_COOKIE, token, {
