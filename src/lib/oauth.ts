@@ -102,7 +102,17 @@ export async function exchangeCode(
   if (!response.ok) {
     throw new Error(`oauth_token_exchange_failed_${response.status}`);
   }
-  return response.json();
+  const data = (await response.json()) as {
+    access_token?: string;
+    id_token?: string;
+  };
+  if (!data.access_token) {
+    throw new Error("oauth_token_exchange_missing_access_token");
+  }
+  return {
+    accessToken: data.access_token,
+    idToken: data.id_token,
+  };
 }
 
 export async function fetchProfile(
