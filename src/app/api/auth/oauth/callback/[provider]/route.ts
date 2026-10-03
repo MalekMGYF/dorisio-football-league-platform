@@ -42,12 +42,13 @@ export async function GET(
     const userId = await resolveOAuthUser(config.id, profile);
     await createSession(userId);
 
-    const response = Response.redirect(`${request.nextUrl.origin}/profile`, 302);
-    response.headers.set(
-      "Set-Cookie",
-      "dorisio_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-    );
-    return response;
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `${request.nextUrl.origin}/profile`,
+        "Set-Cookie": "dorisio_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+      },
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       return Response.redirect(

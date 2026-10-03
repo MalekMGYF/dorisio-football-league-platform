@@ -35,14 +35,15 @@ export async function GET(
       url.searchParams.set(key, value);
     }
 
-    const response = Response.redirect(url.toString(), 302);
-    response.headers.set(
-      "Set-Cookie",
-      `dorisio_oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600${
-        process.env.NODE_ENV === "production" ? "; Secure" : ""
-      }`,
-    );
-    return response;
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: url.toString(),
+        "Set-Cookie": `dorisio_oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600${
+          process.env.NODE_ENV === "production" ? "; Secure" : ""
+        }`,
+      },
+    });
   } catch (error) {
     return jsonError(error);
   }
