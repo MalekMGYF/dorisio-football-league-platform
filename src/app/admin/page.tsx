@@ -145,8 +145,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="flex min-w-0 flex-wrap items-end justify-between gap-4">
         <div>
           <p className="micro">ADMINISTRATION</p>
           <h1 className="mt-1.5 text-[clamp(2rem,6vw,3.1rem)] font-extrabold leading-tight">
@@ -166,9 +166,9 @@ export default function AdminPage() {
         )}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[240px_1fr]">
+      <div className="mt-6 grid min-w-0 gap-5 lg:mt-8 lg:grid-cols-[240px_1fr] lg:gap-6">
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <nav className="flex gap-2 overflow-x-auto scroll-x rounded-2xl border border-line bg-surface p-2 lg:flex-col lg:overflow-visible">
+          <nav className="grid grid-cols-2 gap-1.5 rounded-2xl border border-line bg-surface p-2 sm:flex sm:gap-2 sm:overflow-x-auto sm:scroll-x lg:flex-col lg:overflow-visible">
             {SECTIONS.map((item) => {
               const Icon = item.icon;
               const active = section === item.value;
@@ -177,14 +177,14 @@ export default function AdminPage() {
                   key={item.value}
                   onClick={() => setSection(item.value)}
                   className={cn(
-                    "relative flex shrink-0 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[0.86rem] font-bold transition-colors",
+                    "relative flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-[0.76rem] font-bold transition-colors sm:shrink-0 sm:justify-start sm:px-3.5 sm:text-[0.86rem]",
                     active
                       ? "bg-gold/12 text-gold-light"
                       : "text-muted hover:text-paper hover:bg-elevated",
                   )}
                 >
                   <Icon size={17} />
-                  <span className="whitespace-nowrap">{item.label}</span>
+                  <span className="truncate whitespace-nowrap">{item.label}</span>
                 </button>
               );
             })}
@@ -207,7 +207,7 @@ export default function AdminPage() {
             >
               {section === "overview" && (
                 <>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
                     {stats.map((stat) => (
                       <div
                         key={stat.label}
@@ -223,10 +223,10 @@ export default function AdminPage() {
                     ))}
                   </div>
 
-                  <Panel className="p-6">
+                  <Panel className="p-4 sm:p-6">
                     <p className="micro">QUICK ACTIONS</p>
                     <h2 className="mt-1 text-xl font-extrabold">إجراءات سريعة</h2>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
                       {[
                         {
                           label: "مركز المباراة المباشر",
@@ -262,7 +262,7 @@ export default function AdminPage() {
                     </div>
                   </Panel>
 
-                  <Panel className="p-6">
+                  <Panel className="p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="micro">RECENT ACTIVITY</p>
