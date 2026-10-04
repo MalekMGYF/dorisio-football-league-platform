@@ -77,27 +77,34 @@ export async function POST(request: NextRequest) {
       )[0];
 
     const existingTeams = await db.select().from(teams).where(eq(teams.leagueId, league.id));
-    let teamRows = existingTeams;
-    if (teamRows.length === 0) {
-      teamRows = await db
-        .insert(teams)
-        .values(
-          TEAM_SEED.map((t) => ({
-            leagueId: league.id,
-            name: t.name,
-            shortName: t.short,
-            primaryColor: t.primary,
-            secondaryColor: t.secondary,
-          })),
-        )
-        .returning();
-    }
+    const missingTeams = TEAM_SEED.filter(
+      (seedTeam) => !existingTeams.some((team) => team.name === seedTeam.name),
+    );
+    const insertedTeams = missingTeams.length
+      ? await db
+          .insert(teams)
+          .values(
+            missingTeams.map((t) => ({
+              leagueId: league.id,
+              name: t.name,
+              shortName: t.short,
+              primaryColor: t.primary,
+              secondaryColor: t.secondary,
+            })),
+          )
+          .returning()
+      : [];
+    const teamRows = [...existingTeams, ...insertedTeams];
 
+    // Complete partially-created demo teams instead of skipping the entire seed.
     const existingPlayers = await db.select().from(players).where(eq(players.leagueId, league.id));
-    if (existingPlayers.length === 0) {
-      const positions = ["GK", "DEF", "MID", "FWD"];
-      const values = teamRows.flatMap((team, teamIndex) =>
-        positions.map((position, index) => ({
+    const positions = ["GK", "DEF", "MID", "FWD"];
+    const missingPlayers = teamRows.flatMap((team, teamIndex) =>
+      positions.flatMap((position, index) => {
+        if (existingPlayers.some((player) => player.teamId === team.id && player.position === position)) {
+          return [];
+        }
+        return [{
           leagueId: league.id,
           teamId: team.id,
           name: `${FIRST_NAMES[(teamIndex * 3 + index) % FIRST_NAMES.length]} ${
@@ -105,16 +112,19 @@ export async function POST(request: NextRequest) {
           }`,
           shirtNumber: index + 1,
           position,
-          isCaptain: index === 2,
-        })),
-      );
-      await db.insert(players).values(values);
-    }
+          isCaptain: position === "MID",
+        }];
+      }),
+    );
+    if (missingPlayers.length > 0) await db.insert(players).values(missingPlayers);
 
     const existingMatches = await db.select().from(matches).where(eq(matches.leagueId, league.id));
     let createdMatches = existingMatches;
     if (createdMatches.length === 0) {
       const fixtures = generateRoundRobin(teamRows.map((t) => t.id));
+      if (fixtures.length === 0) {
+        throw new Error("demo_seed_needs_two_teams");
+      }
       const start = new Date();
       createdMatches = await db
         .insert(matches)
@@ -212,11 +222,14 @@ export async function POST(request: NextRequest) {
       await recomputeMatch(match.id);
     }
 
-    await db.insert(announcements).values({
-      title: "انطلاق دوريسيو المدرسي",
-      body: "استعداداً لانطلاق الجولة الأولى، تم إصدار جدول المباريات وتسجيل الفرق المشاركة.",
-      tag: "مباراة اليوم",
-    });
+    const existingAnnouncements = await db.select().from(announcements).limit(1);
+    if (existingAnnouncements.length === 0) {
+      await db.insert(announcements).values({
+        title: "انطلاق دوريسيو المدرسي",
+        body: "استعداداً لانطلاق الجولة الأولى، تم إصدار جدول المباريات وتسجيل الفرق المشاركة.",
+        tag: "مباراة اليوم",
+      });
+    }
 
     return ok({ ok: true, message: "تم تجهيز بيانات التطوير بنجاح." });
   } catch (error) {
