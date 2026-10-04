@@ -31,10 +31,10 @@ export default function TeamPage() {
 
   const played = matches
     .filter((match) => match.status === "ft")
-    .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
+    .sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime());
   const upcoming = matches
     .filter((match) => match.status === "scheduled")
-    .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+    .sort((a, b) => new Date(a.kickoffAt).getTime() - new Date(b.kickoffAt).getTime());
 
   if (loading && !data) {
     return (

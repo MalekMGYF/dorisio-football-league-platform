@@ -36,7 +36,7 @@ export default function MatchesPage() {
   const shown = round ? visible.filter((m) => m.round === round) : visible;
   const ordered = [...shown].sort((a, b) => {
     const rank = (status: string) => (status === "live" ? 0 : status === "scheduled" ? 1 : 2);
-    return rank(a.status) - rank(b.status) || a.kickoffAt.getTime() - b.kickoffAt.getTime();
+    return rank(a.status) - rank(b.status) || new Date(a.kickoffAt).getTime() - new Date(b.kickoffAt).getTime();
   });
 
   return (

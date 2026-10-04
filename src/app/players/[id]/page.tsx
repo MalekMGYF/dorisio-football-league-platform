@@ -36,7 +36,7 @@ export default function PlayerPage() {
         (match) =>
           (match.homeTeamId === team.id || match.awayTeamId === team.id) && match.status === "ft",
       )
-      .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime())
+      .sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime())
       .slice(0, 6);
   }, [data, team]);
 
