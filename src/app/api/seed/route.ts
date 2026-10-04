@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     const existingPlayers = await db.select().from(players).where(eq(players.leagueId, league.id));
     if (existingPlayers.length === 0) {
-      const positions = ["GK", "DEF", "MID", "MID", "FWD", "FWD", "DEF", "MID", "FWD", "GK", "DEF"];
+      const positions = ["GK", "DEF", "MID", "FWD"];
       const values = teamRows.flatMap((team, teamIndex) =>
         positions.map((position, index) => ({
           leagueId: league.id,
@@ -160,8 +160,8 @@ export async function POST(request: NextRequest) {
           minute: 7,
           type: "goal",
           teamId: match.homeTeamId,
-          playerId: home[4]?.id ?? home[0]?.id,
-          assistPlayerId: home[3]?.id ?? null,
+          playerId: home[3]?.id ?? home[0]?.id,
+          assistPlayerId: home[2]?.id ?? null,
           clientAt: new Date(),
         },
         {
@@ -179,8 +179,8 @@ export async function POST(request: NextRequest) {
           minute: 18,
           type: "goal",
           teamId: match.awayTeamId,
-          playerId: away[5]?.id ?? away[1]?.id,
-          assistPlayerId: away[4]?.id ?? null,
+          playerId: away[3]?.id ?? away[1]?.id,
+          assistPlayerId: away[2]?.id ?? null,
           clientAt: new Date(),
         },
       ];
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           minute: 26,
           type: "goal",
           teamId: match.homeTeamId,
-          playerId: home[5]?.id ?? home[1]?.id,
+          playerId: home[3]?.id ?? home[1]?.id,
           assistPlayerId: home[2]?.id ?? null,
           clientAt: new Date(),
         } as never);

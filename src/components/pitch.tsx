@@ -73,7 +73,7 @@ function SideLineup({
             {formation && <p className="micro text-[0.6rem]">{formation}</p>}
           </div>
         </div>
-        <span className="micro">STARTING XI</span>
+        <span className="micro">STARTING 4</span>
       </div>
 
       <div className="flex flex-col-reverse gap-5">

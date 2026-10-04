@@ -656,7 +656,7 @@ function LineupEditor({
 }) {
   const toast = useToast();
   const [teamId, setTeamId] = useState<string>(bundle.match.homeTeamId);
-  const [formation, setFormation] = useState(bundle.match.homeFormation ?? "2-2");
+  const [formation] = useState("1-1-1-1");
   const [entries, setEntries] = useState<Record<string, { isStarting: boolean; position: string }>>(
     () => {
       const map: Record<string, { isStarting: boolean; position: string }> = {};
@@ -677,7 +677,7 @@ function LineupEditor({
         .filter(([playerId]) => squad.some((player) => player.id === playerId))
         .map(([playerId, value], index) => ({
           playerId,
-          isStarting: value.isStarting,
+          isStarting: true,
           position: value.position,
           sortIndex: index,
         }));
@@ -717,18 +717,14 @@ function LineupEditor({
       </div>
 
       <Field label="الخطة التكتيكية">
-        <select value={formation} onChange={(e) => setFormation(e.target.value)}>
-          {["1-2", "2-1", "2-2", "1-2-1", "2-1-1", "3-1"].map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
+        <select value={formation} disabled>
+          <option value="1-1-1-1">1-1-1-1 — حارس، مدافع، وسط، مهاجم</option>
         </select>
       </Field>
 
       <div className="space-y-2">
         {squad.map((player) => {
-          const entry = entries[player.id] ?? { isStarting: false, position: player.position };
+          const entry = entries[player.id] ?? { isStarting: true, position: player.position };
           return (
             <div
               key={player.id}
@@ -755,22 +751,9 @@ function LineupEditor({
                   </option>
                 ))}
               </select>
-              <button
-                onClick={() =>
-                  setEntries({
-                    ...entries,
-                    [player.id]: { ...entry, isStarting: !entry.isStarting },
-                  })
-                }
-                className={cn(
-                  "rounded-lg border px-3 py-2 text-[0.78rem] font-bold transition-colors",
-                  entry.isStarting
-                    ? "border-live/50 bg-live/12 text-live"
-                    : "border-line bg-surface text-muted",
-                )}
-              >
-                {entry.isStarting ? "أساسي" : "بديل"}
-              </button>
+              <span className="rounded-lg border border-live/50 bg-live/12 px-3 py-2 text-[0.78rem] font-bold text-live">
+                أساسي
+              </span>
             </div>
           );
         })}
@@ -786,7 +769,7 @@ function LineupEditor({
       <div className="flex items-center justify-between gap-3">
         <Pill tone="neutral">
           <Flag size={12} />{" "}
-          {Object.values(entries).filter((entry) => entry.isStarting).length} أساسي
+          {squad.length} أساسي
         </Pill>
         <Button variant="gold" loading={saving} onClick={() => void save()}>
           <CircleDot size={16} /> حفظ التشكيلة

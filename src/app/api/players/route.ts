@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { players, type Player } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
@@ -47,9 +47,22 @@ export async function POST(request: NextRequest) {
   try {
     await requireAdmin();
     const body = await readJson<Record<string, unknown>>(request);
+    const leagueId = requireUuid(body.leagueId, "الدوري");
+    const teamId = requireUuid(body.teamId, "الفريق");
+    const [{ value: rosterSize }] = await db
+      .select({ value: count() })
+      .from(players)
+      .where(and(eq(players.leagueId, leagueId), eq(players.teamId, teamId)));
+    if (Number(rosterSize) >= 4) {
+      throw new ApiError(
+        "كل فريق يجب أن يتكوّن من 4 لاعبين فقط: حارس ومدافع ووسط ومهاجم.",
+        "roster_limit",
+        409,
+      );
+    }
     const values: typeof players.$inferInsert = {
-      leagueId: requireUuid(body.leagueId, "الدوري"),
-      teamId: requireUuid(body.teamId, "الفريق"),
+      leagueId,
+      teamId,
       name: requiredString(body.name, "اسم اللاعب", 120),
       position: normalizePosition(body.position),
       photoUrl: optionalString(body.photoUrl, "الصورة", 1000),
@@ -76,7 +89,25 @@ export async function PATCH(request: NextRequest) {
     if (body.shirtNumber !== undefined)
       patch.shirtNumber = optionalInt(body.shirtNumber, "رقم القميص", 1, 99);
     if (body.isCaptain !== undefined) patch.isCaptain = body.isCaptain === true;
-    if (body.teamId !== undefined) patch.teamId = requireUuid(body.teamId, "الفريق");
+    if (body.teamId !== undefined) {
+      const nextTeamId = requireUuid(body.teamId, "الفريق");
+      const [current] = await db.select().from(players).where(eq(players.id, id)).limit(1);
+      if (!current) throw new ApiError("اللاعب غير موجود.", "not_found", 404);
+      if (current.teamId !== nextTeamId) {
+        const [{ value: rosterSize }] = await db
+          .select({ value: count() })
+          .from(players)
+          .where(and(eq(players.leagueId, current.leagueId), eq(players.teamId, nextTeamId)));
+        if (Number(rosterSize) >= 4) {
+          throw new ApiError(
+            "لا يمكن نقل اللاعب: الفريق ممتلئ (4 لاعبين).",
+            "roster_limit",
+            409,
+          );
+        }
+      }
+      patch.teamId = nextTeamId;
+    }
 
     const updated = await db.update(players).set(patch).where(eq(players.id, id)).returning();
     if (!updated[0]) throw new ApiError("اللاعب غير موجود.", "not_found", 404);

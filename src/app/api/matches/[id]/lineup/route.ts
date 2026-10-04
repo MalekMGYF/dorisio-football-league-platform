@@ -40,8 +40,7 @@ export async function GET(
 
 /**
  * Replaces a team's lineup for a match.
- * Validates: max 11 starters, no duplicate players, players must belong to the
- * team, and the team must be playing this match.
+ * Each team has exactly four starters: GK, DEF, MID and FWD.
  */
 export async function PUT(
   request: NextRequest,
@@ -77,8 +76,11 @@ export async function PUT(
       throw new ApiError("لا يمكن تكرار اللاعب نفسه في التشكيلة.", "duplicate_player");
     }
     const starters = entries.filter((e) => e.isStarting !== false);
-    if (starters.length > 11) {
-      throw new ApiError("التشكيلة الأساسية لا يمكن أن تتجاوز 11 لاعباً.", "invalid_lineup");
+    if (entries.length !== 4 || starters.length !== 4) {
+      throw new ApiError(
+        "التشكيلة يجب أن تضم 4 لاعبين فقط: حارس ومدافع ووسط ومهاجم.",
+        "invalid_lineup",
+      );
     }
     const squad = playerIds.length
       ? await db.select().from(players).where(inArray(players.id, playerIds))
@@ -91,6 +93,19 @@ export async function PUT(
       throw new ApiError(
         `اللاعب «${invalid[0].name}» لا ينتمي إلى هذا الفريق.`,
         "invalid_player",
+      );
+    }
+
+    const positions = starters.map((entry) => String(entry.position ?? "").toUpperCase());
+    const requiredPositions = ["GK", "DEF", "MID", "FWD"];
+    if (
+      requiredPositions.some(
+        (position) => positions.filter((item) => item === position).length !== 1,
+      )
+    ) {
+      throw new ApiError(
+        "يجب اختيار لاعب واحد في كل مركز: حارس ومدافع ووسط ومهاجم.",
+        "invalid_lineup",
       );
     }
 
@@ -116,7 +131,7 @@ export async function PUT(
       );
     }
 
-    const formation = typeof body.formation === "string" ? body.formation.slice(0, 12) : null;
+    const formation = "1-1-1-1";
     if (formation) {
       await db
         .update(matches)
