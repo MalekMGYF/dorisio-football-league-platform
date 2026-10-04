@@ -1171,6 +1171,30 @@ export function AdminSettings({ onChanged }: { onChanged: () => void }) {
     }
   }, [onChanged, toast]);
 
+  const resetLeague = useCallback(async () => {
+    const confirmation = window.prompt(
+      "تحذير: سيتم حذف الفرق واللاعبين والمباريات والأحداث والجوائز والإعلانات. الحسابات ستبقى. اكتب RESET-DORISIO للتأكيد:",
+    );
+    if (confirmation !== "RESET-DORISIO") return;
+    setRunning(true);
+    setResult(null);
+    try {
+      const response = await api<{ ok: boolean; message: string }>("/api/admin/reset", {
+        method: "POST",
+        body: { confirm: "RESET-DORISIO" },
+      });
+      setResult(response.message);
+      toast(response.message, response.ok ? "success" : "warning");
+      if (response.ok) onChanged();
+    } catch (error) {
+      const message = error instanceof ApiClientError ? error.message : "تعذّر تصفير الدوري.";
+      setResult(message);
+      toast(message, "error");
+    } finally {
+      setRunning(false);
+    }
+  }, [onChanged, toast]);
+
   return (
     <Panel className="p-6">
       <p className="micro">SETTINGS</p>
@@ -1180,15 +1204,34 @@ export function AdminSettings({ onChanged }: { onChanged: () => void }) {
         <div className="rounded-xl border border-line bg-elevated/40 p-5">
           <h3 className="font-bold">بيانات التطوير التجريبية</h3>
           <p className="mt-2 text-[0.85rem] leading-relaxed text-muted">
-            ينشئ سكربت التطوير 5 فرق و11 لاعباً في كل فريق وجداولاً كاملاً مع مباريات وأحداث
-            تجريبية. لا تشغّله على بيانات الإنتاج الحقيقية.
+            ينشئ سكربت التطوير 5 فرق، و4 لاعبين في كل فريق (حارس ومدافع ووسط ومهاجم)، وجدولاً
+            كاملاً مع مباريات وأحداث تجريبية. إذا كانت البيانات موجودة فلن يستبدلها.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button variant="pitch" loading={running} onClick={() => void seed()}>
-              <RefreshCw size={16} /> تشغيل سكربت التطوير
+            <Button
+              variant="pitch"
+              loading={running}
+              onClick={() => {
+                if (window.confirm("إنشاء بيانات تجريبية لا يستبدل البيانات الحالية. متابعة؟")) {
+                  void seed();
+                }
+              }}
+            >
+              <RefreshCw size={16} /> إنشاء فرق وبيانات تجريبية
             </Button>
             {result && <span className="text-[0.82rem] text-muted">{result}</span>}
           </div>
+        </div>
+
+        <div className="rounded-xl border border-alert/40 bg-alert/[0.06] p-5">
+          <h3 className="font-bold text-alert">تصفير الدوري بالكامل</h3>
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-muted">
+            يحذف الفرق واللاعبين والمباريات والتشكيلات والأحداث والجوائز والإعلانات والإشعارات.
+            حسابات المستخدمين والمدير تظل موجودة حتى لا تفقد إمكانية الدخول.
+          </p>
+          <Button variant="danger" loading={running} onClick={() => void resetLeague()} className="mt-4">
+            <Trash2 size={16} /> تصفير كل بيانات الدوري
+          </Button>
         </div>
 
         <div className="rounded-xl border border-gold/30 bg-gold/[0.06] p-5">
