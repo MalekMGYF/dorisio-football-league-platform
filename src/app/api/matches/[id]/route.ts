@@ -128,6 +128,15 @@ export async function DELETE(
   try {
     await requireAdmin();
     const { id } = await context.params;
+    const [current] = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
+    if (!current) throw new ApiError("المباراة غير موجودة.", "not_found", 404);
+    if (current.status !== "scheduled" || current.revision > 0) {
+      throw new ApiError(
+        "لا يمكن حذف مباراة بدأت أو انتهت. الحذف متاح للمباراة القادمة فقط.",
+        "match_locked",
+        409,
+      );
+    }
     await db.delete(matchLineups).where(eq(matchLineups.matchId, id));
     await db.delete(matchEvents).where(eq(matchEvents.matchId, id));
     await db.delete(ratings).where(eq(ratings.matchId, id));

@@ -659,6 +659,18 @@ export function AdminMatches({
     startDate: "",
   });
 
+  const removeUpcomingMatch = async (matchId: string) => {
+    if (!window.confirm("هل تريد حذف هذه المباراة القادمة من جدول المباريات؟")) return;
+    const ok = await run(
+      async () => {
+        await api(`/api/matches/${matchId}`, { method: "DELETE" });
+      },
+      toast,
+      "تم حذف المباراة القادمة من الجدول.",
+    );
+    if (ok) onChanged();
+  };
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -863,14 +875,27 @@ export function AdminMatches({
                   })}
                 </p>
               </div>
-              <Pill tone={match.status === "live" ? "live" : "neutral"}>
-                {match.status === "ft" ? "انتهت" : match.status === "live" ? "مباشر" : "قادمة"}
-              </Pill>
-              <Link href={`/admin/live/${match.id}`}>
-                <Button variant="live" size="sm">
-                  مركز التحكم
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Pill tone={match.status === "live" ? "live" : "neutral"}>
+                  {match.status === "ft" ? "انتهت" : match.status === "live" ? "مباشر" : "قادمة"}
+                </Pill>
+                {match.status === "scheduled" ? (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => void removeUpcomingMatch(match.id)}
+                    title="حذف المباراة القادمة"
+                  >
+                    <Trash2 size={15} /> حذف
+                  </Button>
+                ) : (
+                  <Link href={`/admin/live/${match.id}`}>
+                    <Button variant="live" size="sm">
+                      مركز التحكم
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           ))}
           {(data?.matches ?? []).length === 0 && (
