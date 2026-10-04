@@ -1,5 +1,5 @@
 /* Dorisio service worker — app shell cache, offline fallback, update flow. */
-const VERSION = "dorisio-v3";
+const VERSION = "dorisio-v4-logo";
 const SHELL = [
   "/",
   "/offline",
@@ -7,7 +7,8 @@ const SHELL = [
   "/table",
   "/players",
   "/manifest.webmanifest",
-  "/icon.svg",
+  "/icon-192.png",
+  "/icon-maskable.png",
 ];
 
 self.addEventListener("install", (event) => {
