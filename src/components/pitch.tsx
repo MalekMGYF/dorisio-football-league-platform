@@ -16,20 +16,29 @@ const POSITION_LABEL: Record<string, string> = {
 
 const POSITION_Y: Record<string, number> = {
   GK: 12,
-  DEF: 29,
-  MID: 46,
-  FWD: 63,
+  DEF: 30,
+  MID: 50,
+  FWD: 70,
+};
+
+const POSITION_X: Record<string, number[]> = {
+  GK: [50],
+  DEF: [35, 65],
+  MID: [65, 35],
+  FWD: [50, 35, 65],
 };
 
 function PlayerToken({
   entry,
   color,
   y,
+  x,
   flip = false,
 }: {
   entry: LineupEntry;
   color: string;
   y: number;
+  x: number;
   flip?: boolean;
 }) {
   const reduce = useReducedMotion();
@@ -40,7 +49,7 @@ function PlayerToken({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 280, damping: 23 }}
       className="absolute z-10 flex w-[5.8rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center sm:w-28"
-      style={{ left: "50%", top: `${y}%` }}
+      style={{ left: `${x}%`, top: `${y}%` }}
     >
       <div
         className="relative grid size-11 place-items-center rounded-full border-[3px] bg-[#10251a]/95 shadow-[0_5px_14px_rgba(0,0,0,0.35)] sm:size-14"
@@ -100,10 +109,23 @@ function SideEntries({
     <>
       {entries
         .filter((entry) => entry.isStarting)
-        .map((entry) => {
+        .map((entry, index, starting) => {
           const base = POSITION_Y[entry.position] ?? 46;
           const y = flip ? 100 - base : base;
-          return <PlayerToken key={entry.id} entry={entry} color={color} y={y} flip={flip} />;
+          const samePosition = starting.filter((item) => item.position === entry.position);
+          const positionIndex = samePosition.findIndex((item) => item.id === entry.id);
+          const lane = POSITION_X[entry.position] ?? [50];
+          const rawX = lane[positionIndex] ?? lane[index % lane.length] ?? 50;
+          return (
+            <PlayerToken
+              key={entry.id}
+              entry={entry}
+              color={color}
+              y={y}
+              x={flip ? 100 - rawX : rawX}
+              flip={flip}
+            />
+          );
         })}
     </>
   );

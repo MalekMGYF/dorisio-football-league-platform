@@ -15,7 +15,7 @@ import {
   Star,
 } from "lucide-react";
 import { TeamCrest } from "@/components/crest";
-import { EventTimeline, GoalFlash, LiveBadge, ScoreDigit, type TimelineEntry } from "@/components/match";
+import { EventTimeline, LiveBadge, ScoreDigit, type TimelineEntry } from "@/components/match";
 import { LineupPitch } from "@/components/pitch";
 import { PlayerAvatar, PositionBadge } from "@/components/player";
 import {
@@ -211,9 +211,6 @@ export default function MatchPage() {
 
   return (
     <div className="relative pb-20">
-      {flash && (
-        <span key={flash.id} className="gold-sweep fixed inset-x-0 top-16 z-40 h-28 pointer-events-none" />
-      )}
 
       {/* ---------------------------- SCOREBOARD --------------------------- */}
       <section className="relative overflow-hidden border-b border-line band grain">
@@ -307,10 +304,10 @@ export default function MatchPage() {
             exit={{ opacity: 0, y: -12 }}
             className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4"
           >
-            <div className="flex items-center gap-3 rounded-full border border-gold/55 bg-ink/92 px-6 py-3">
-              <Sparkles size={19} className="text-gold" />
-              <span className="text-gold-light font-extrabold text-lg">هــدف!</span>
-              {flash.name && <span className="num text-xl font-bold">{flash.name}</span>}
+            <div className="flex items-center gap-3 rounded-full border border-live/60 bg-ink/95 px-6 py-3 shadow-[0_0_34px_rgba(35,193,107,.42)]">
+              <Sparkles size={19} className="text-live" />
+              <span className="text-live font-extrabold text-lg">هــدف!</span>
+              {flash.name && <span className="num text-xl font-bold text-paper">{flash.name}</span>}
             </div>
           </motion.div>
         )}
