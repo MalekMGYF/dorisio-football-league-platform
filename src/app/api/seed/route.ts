@@ -6,6 +6,7 @@ import {
   leagues,
   matches,
   matchEvents,
+  matchLineups,
   players,
   teams,
 } from "@/db/schema";
@@ -145,14 +146,42 @@ export async function POST(request: NextRequest) {
 
     // Play out the first two fixtures with sample events so the live centre,
     // standings and player stats all have real data to render.
-    const played = createdMatches.slice(0, 2);
-    for (const [index, match] of played.entries()) {
+    for (const [index, match] of createdMatches.entries()) {
+      const squad = await db.select().from(players).where(eq(players.leagueId, league.id));
+      const existingLineups = await db
+        .select()
+        .from(matchLineups)
+        .where(eq(matchLineups.matchId, match.id));
+
+      // The seed is safe to run again: only fill a side whose lineup is missing.
+      const lineupValues = [
+        { teamId: match.homeTeamId, players: squad.filter((p) => p.teamId === match.homeTeamId) },
+        { teamId: match.awayTeamId, players: squad.filter((p) => p.teamId === match.awayTeamId) },
+      ].flatMap(({ teamId, players: teamPlayers }) => {
+        if (existingLineups.some((entry) => entry.teamId === teamId)) return [];
+        const starters = ["GK", "DEF", "MID", "FWD"].map((position) =>
+          teamPlayers.find((player) => player.position === position),
+        );
+        if (starters.some((player) => !player)) return [];
+        return starters.map((player, sortIndex) => ({
+          matchId: match.id,
+          teamId,
+          playerId: player!.id,
+          isStarting: true,
+          position: player!.position,
+          sortIndex,
+        }));
+      });
+      if (lineupValues.length > 0) await db.insert(matchLineups).values(lineupValues);
+
+      // Only the first two matches receive sample events and scores.
+      if (index >= 2) continue;
+
       const existingEvents = await db
         .select()
         .from(matchEvents)
         .where(eq(matchEvents.matchId, match.id));
       if (existingEvents.length > 0) continue;
-      const squad = await db.select().from(players).where(eq(players.leagueId, league.id));
       const home = squad.filter((p) => p.teamId === match.homeTeamId);
       const away = squad.filter((p) => p.teamId === match.awayTeamId);
       const events = [
