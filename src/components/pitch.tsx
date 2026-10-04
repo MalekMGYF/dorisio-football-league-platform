@@ -9,6 +9,12 @@ import { cn } from "@/components/ui";
 type LineupEntry = MatchLineup & { player: Player | null };
 
 const ROW_ORDER = ["GK", "DEF", "MID", "FWD"];
+const POSITION_LABEL: Record<string, string> = {
+  GK: "حارس",
+  DEF: "مدافع",
+  MID: "وسط",
+  FWD: "مهاجم",
+};
 
 function PlayerToken({
   entry,
@@ -58,10 +64,13 @@ function SideLineup({
 }) {
   const starters = entries.filter((entry) => entry.isStarting);
   const subs = entries.filter((entry) => !entry.isStarting);
+  // Always render the four lanes in the rules-defined order. The API rejects
+  // incomplete or duplicate-position lineups, so each lane contains one player
+  // after a valid save.
   const rows = ROW_ORDER.map((position) => ({
     position,
     items: starters.filter((entry) => entry.position === position),
-  })).filter((row) => row.items.length > 0);
+  }));
 
   return (
     <div className="px-3 py-5">
@@ -76,12 +85,21 @@ function SideLineup({
         <span className="micro">STARTING 4</span>
       </div>
 
-      <div className="flex flex-col-reverse gap-5">
+      <div className="flex flex-col gap-4">
         {rows.map((row) => (
-          <div key={row.position} className="flex items-start justify-center gap-3">
-            {row.items.map((entry) => (
-              <PlayerToken key={entry.id} entry={entry} color={color} />
-            ))}
+          <div key={row.position} className="flex min-h-16 items-center justify-center gap-3">
+            <span className="micro w-12 text-left text-[0.55rem]">{POSITION_LABEL[row.position]}</span>
+            <div className="flex items-start justify-center gap-3">
+              {row.items.length > 0 ? (
+                row.items.map((entry) => (
+                  <PlayerToken key={entry.id} entry={entry} color={color} />
+                ))
+              ) : (
+                <span className="grid size-11 place-items-center rounded-full border border-dashed border-white/20 text-dim">
+                  —
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>
