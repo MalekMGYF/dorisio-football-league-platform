@@ -15,17 +15,19 @@ const POSITION_LABEL: Record<string, string> = {
 };
 
 const POSITION_Y: Record<string, number> = {
+  // The away side starts at the top and attacks downward. The home side is
+  // mirrored by SideEntries, so both teams stay in their own half.
   GK: 12,
-  DEF: 30,
-  MID: 50,
-  FWD: 70,
+  DEF: 25,
+  MID: 37,
+  FWD: 48,
 };
 
 const POSITION_X: Record<string, number[]> = {
   GK: [50],
   DEF: [35, 65],
   MID: [65, 35],
-  FWD: [50, 35, 65],
+  FWD: [35, 65, 50],
 };
 
 function PlayerToken({
@@ -52,10 +54,10 @@ function PlayerToken({
       style={{ left: `${x}%`, top: `${y}%` }}
     >
       <div
-        className="relative grid size-11 place-items-center rounded-full border-[3px] bg-[#10251a]/95 shadow-[0_5px_14px_rgba(0,0,0,0.35)] sm:size-14"
+        className="relative grid size-10 place-items-center rounded-full border-[3px] bg-[#10251a]/95 shadow-[0_5px_14px_rgba(0,0,0,0.35)] sm:size-12"
         style={{ borderColor: color, boxShadow: `0 0 0 3px ${color}30, 0 6px 16px rgba(0,0,0,.35)` }}
       >
-        <span className="num text-base font-bold text-white sm:text-xl">{player?.shirtNumber ?? "—"}</span>
+        <span className="num text-sm font-bold text-white sm:text-lg">{player?.shirtNumber ?? "—"}</span>
         <span className="absolute -bottom-1 rounded-full border border-white/15 bg-[#10251a] px-1.5 py-0.5 text-[0.52rem] font-bold text-white/75 sm:text-[0.58rem]">
           {POSITION_LABEL[entry.position] ?? entry.position}
         </span>
