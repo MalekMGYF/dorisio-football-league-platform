@@ -17,10 +17,10 @@ const POSITION_LABEL: Record<string, string> = {
 const POSITION_Y: Record<string, number> = {
   // The away side starts at the top and attacks downward. The home side is
   // mirrored by SideEntries, so both teams stay in their own half.
-  GK: 12,
-  DEF: 25,
-  MID: 37,
-  FWD: 48,
+  GK: 16,
+  DEF: 31,
+  MID: 45,
+  FWD: 55,
 };
 
 const POSITION_X: Record<string, number[]> = {
@@ -81,17 +81,17 @@ function FieldTeamLabel({
   return (
     <div
       className={cn(
-        "absolute z-20 flex items-center gap-2 rounded-xl border border-white/15 bg-black/35 px-2.5 py-2 backdrop-blur-md sm:px-3",
+        "absolute z-20 flex max-w-[9.5rem] items-center gap-1.5 rounded-lg border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm",
         side === "top" ? "left-3 top-3 sm:left-5 sm:top-5" : "bottom-3 right-3 sm:bottom-5 sm:right-5",
       )}
     >
-      <TeamCrest team={team} size={28} />
+      <TeamCrest team={team} size={22} />
       <div className="min-w-0">
-        <p className="max-w-[8rem] truncate text-[0.75rem] font-extrabold text-white sm:text-sm">
+        <p className="max-w-[7rem] truncate text-[0.65rem] font-extrabold text-white sm:text-xs">
           {team?.name ?? "—"}
         </p>
-        <p className="micro text-[0.52rem]" style={{ color }}>
-          التشكيلة الأساسية · 4 لاعبين
+        <p className="micro text-[0.45rem]" style={{ color }}>
+          التشكيلة الأساسية
         </p>
       </div>
     </div>
