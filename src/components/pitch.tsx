@@ -17,10 +17,10 @@ const POSITION_LABEL: Record<string, string> = {
 const POSITION_Y: Record<string, number> = {
   // The away side starts at the top and attacks downward. The home side is
   // mirrored by SideEntries, so both teams stay in their own half.
-  GK: 16,
-  DEF: 31,
-  MID: 45,
-  FWD: 55,
+  GK: 13,
+  DEF: 27,
+  MID: 43,
+  FWD: 63,
 };
 
 const POSITION_X: Record<string, number[]> = {
