@@ -94,13 +94,6 @@ export async function POST(request: NextRequest) {
     }
     const existing = await db.select().from(matches).where(eq(matches.leagueId, leagueId));
     const played = existing.some((m) => m.status === "ft" || m.status === "live");
-    if (existing.length > 0 && body.replace !== true) {
-      throw new ApiError(
-        "يوجد جدول مباريات محفوظ لهذا الدوري. فعّل «استبدال الجدول» للمتابعة.",
-        "fixtures_exist",
-        409,
-      );
-    }
     if (played && body.replace === true) {
       throw new ApiError(
         "لا يمكن استبدال جدول لُعبت منه مباريات، حفاظاً على السجل التاريخي.",
@@ -108,32 +101,44 @@ export async function POST(request: NextRequest) {
         409,
       );
     }
-    if (existing.length > 0) {
+    const append = existing.length > 0 && body.replace !== true;
+    if (existing.length > 0 && body.replace === true) {
       await db.delete(matches).where(eq(matches.leagueId, leagueId));
     }
 
-    const baseDate = body.startDate ? parseKickoff(body.startDate) : new Date();
     const kickoffTime = typeof body.time === "string" ? body.time : "18:00";
     const [hours, minutes] = kickoffTime.split(":").map((n) => Number(n) || 0);
     const gapDays = optionalInt(body.gapDays, "الفترة بين الجولات", 2, 60) ?? 7;
+    const legs = optionalInt(body.legs, "عدد دورات المواجهات", 1, 5) ?? 1;
+    const lastRound = existing.reduce((max, match) => Math.max(max, match.round), 0);
+    const latestKickoff = existing.reduce(
+      (latest, match) => (match.kickoffAt > latest ? match.kickoffAt : latest),
+      new Date(0),
+    );
+    const baseDate = append
+      ? new Date(latestKickoff.getTime() + gapDays * 24 * 60 * 60 * 1000)
+      : body.startDate
+        ? parseKickoff(body.startDate)
+        : new Date();
 
     const fixtures = generateRoundRobin(teamRows.map((t) => t.id));
     const byId = new Map(teamRows.map((t) => [t.id, t]));
-    const values = fixtures.map((fixture) => {
+    const values = Array.from({ length: legs }, (_, leg) => fixtures.map((fixture) => {
+      const round = (append ? lastRound : 0) + leg * (new Set(fixtures.map((item) => item.round)).size) + fixture.round;
       const kickoff = new Date(baseDate);
-      kickoff.setDate(kickoff.getDate() + (fixture.round - 1) * gapDays);
+      kickoff.setDate(kickoff.getDate() + (round - (append ? lastRound + 1 : 1)) * gapDays);
       kickoff.setHours(hours, minutes, 0, 0);
       return {
         leagueId,
-        homeTeamId: fixture.home,
-        awayTeamId: fixture.away,
+        homeTeamId: leg % 2 === 0 ? fixture.home : fixture.away,
+        awayTeamId: leg % 2 === 0 ? fixture.away : fixture.home,
         kickoffAt: kickoff,
         venue: optionalString(body.venue, "الملعب", 160) ?? league.venue,
-        round: fixture.round,
+        round,
         status: "scheduled",
         createdBy: admin.id,
       };
-    });
+    })).flat();
 
     const inserted = values.length ? await db.insert(matches).values(values).returning() : [];
     return ok({

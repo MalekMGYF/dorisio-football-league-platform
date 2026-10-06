@@ -657,6 +657,7 @@ export function AdminMatches({
     time: "18:00",
     gapDays: 7,
     startDate: "",
+    legs: 1,
   });
 
   const removeUpcomingMatch = async (matchId: string) => {
@@ -700,6 +701,7 @@ export function AdminMatches({
               time: form.time,
               gapDays: Number(form.gapDays),
               startDate: form.startDate || undefined,
+              legs: Number(form.legs),
               venue: form.venue,
             },
           });
@@ -819,6 +821,16 @@ export function AdminMatches({
                 className="num"
               />
             </Field>
+            <Field label={form.replace ? "عدد دورات المواجهات" : "عدد الدورات الإضافية"}>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={form.legs}
+                onChange={(e) => setForm({ ...form, legs: Number(e.target.value) })}
+                className="num"
+              />
+            </Field>
             <Field label="استبدال الجدول الحالي">
               <select
                 value={form.replace ? "yes" : "no"}
@@ -829,9 +841,9 @@ export function AdminMatches({
               </select>
             </Field>
             <p className="text-[0.78rem] leading-relaxed text-dim sm:col-span-2">
-              المولّد يبني جدولاً بطريقة الذهاب والإياب المبسّطة (Round-Robin) ويتعامل مع عدد
-              الفرق الفردي عبر إراحة فريق في كل جولة. لا يمكن استبدال جدول لُعبت منه مباريات،
-              حفاظاً على السجل التاريخي.
+              المولّد يبني جدولاً بطريقة Round-Robin ويتعامل مع عدد الفرق الفردي عبر إراحة فريق
+              في كل جولة. عند اختيار «الإضافة فقط»، كل ضغطة تضيف دورة جديدة بعد آخر جولة بدون
+              حذف المباريات الحالية. اختر 2 إذا أردت ذهاباً وإياباً في نفس العملية.
             </p>
           </div>
         )}
