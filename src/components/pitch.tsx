@@ -25,9 +25,9 @@ const POSITION_Y: Record<string, number> = {
 
 const POSITION_X: Record<string, number[]> = {
   GK: [50],
-  DEF: [35, 65],
-  MID: [65, 35],
-  FWD: [35, 65, 50],
+  DEF: [24, 76],
+  MID: [76, 24],
+  FWD: [24, 76, 50],
 };
 
 function PlayerToken({
@@ -50,7 +50,7 @@ function PlayerToken({
       initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.72, y: flip ? 10 : -10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 280, damping: 23 }}
-      className="absolute z-10 flex w-[5.8rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center sm:w-28"
+      className="absolute z-10 flex w-[4.6rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center sm:w-28"
       style={{ left: `${x}%`, top: `${y}%` }}
     >
       <div
@@ -62,7 +62,7 @@ function PlayerToken({
           {POSITION_LABEL[entry.position] ?? entry.position}
         </span>
       </div>
-      <span className="mt-2 max-w-full truncate rounded-md bg-black/45 px-2 py-0.5 text-[0.68rem] font-extrabold text-white shadow-sm sm:text-[0.76rem]">
+      <span className="mt-2 max-w-full truncate rounded-md bg-black/45 px-1.5 py-0.5 text-[0.59rem] font-extrabold text-white shadow-sm sm:px-2 sm:text-[0.76rem]">
         {player?.name ?? "لاعب"}
       </span>
     </motion.div>
