@@ -165,6 +165,14 @@ export async function getMatchBundle(matchId: string, userId?: string | null): P
     .where(eq(matchEvents.matchId, matchId))
     .orderBy(desc(matchEvents.minute), desc(matchEvents.createdAt));
 
+  const squad = await db
+    .select()
+    .from(players)
+    .where(
+      inArray(players.teamId, [match.homeTeamId, match.awayTeamId].filter(Boolean) as string[]),
+    );
+  await ensureDefaultLineups(matchId, [match.homeTeamId, match.awayTeamId], squad);
+
   const lineupRows = await db
     .select({
       id: matchLineups.id,
@@ -180,13 +188,6 @@ export async function getMatchBundle(matchId: string, userId?: string | null): P
     .leftJoin(players, eq(players.id, matchLineups.playerId))
     .where(eq(matchLineups.matchId, matchId))
     .orderBy(asc(matchLineups.sortIndex));
-
-  const squad = await db
-    .select()
-    .from(players)
-    .where(
-      inArray(players.teamId, [match.homeTeamId, match.awayTeamId].filter(Boolean) as string[]),
-    );
 
   const matchRatings = await db
     .select({
@@ -244,6 +245,41 @@ export async function getMatchBundle(matchId: string, userId?: string | null): P
     ratings: ratingSummary,
     serverTime: new Date().toISOString(),
   };
+}
+
+/**
+ * New fixtures should be viewable immediately. If a manager has not saved a
+ * custom lineup, use one player from each required position when available.
+ * This is idempotent and never overwrites an existing manager-created lineup.
+ */
+async function ensureDefaultLineups(
+  matchId: string,
+  teamIds: string[],
+  squad: Player[],
+): Promise<void> {
+  const existing = await db
+    .select({ teamId: matchLineups.teamId })
+    .from(matchLineups)
+    .where(eq(matchLineups.matchId, matchId));
+  const existingTeams = new Set(existing.map((row) => row.teamId));
+  const positions = ["GK", "DEF", "MID", "FWD"];
+  const values = teamIds.flatMap((teamId) => {
+    if (existingTeams.has(teamId)) return [];
+    const teamPlayers = squad.filter((player) => player.teamId === teamId);
+    const starters = positions.map((position) =>
+      teamPlayers.find((player) => player.position === position),
+    );
+    if (starters.some((player) => !player)) return [];
+    return starters.map((player, sortIndex) => ({
+      matchId,
+      teamId,
+      playerId: player!.id,
+      isStarting: true,
+      position: player!.position,
+      sortIndex,
+    }));
+  });
+  if (values.length) await db.insert(matchLineups).values(values).onConflictDoNothing();
 }
 
 export const EVENT_MUTATION_GUARD = {
