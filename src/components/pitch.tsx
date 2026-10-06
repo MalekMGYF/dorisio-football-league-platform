@@ -30,6 +30,13 @@ const POSITION_X: Record<string, number[]> = {
   FWD: [24, 76, 50],
 };
 
+const SINGLE_POSITION_X: Record<string, number> = {
+  GK: 50,
+  DEF: 35,
+  MID: 50,
+  FWD: 68,
+};
+
 function PlayerToken({
   entry,
   color,
@@ -117,7 +124,10 @@ function SideEntries({
           const samePosition = starting.filter((item) => item.position === entry.position);
           const positionIndex = samePosition.findIndex((item) => item.id === entry.id);
           const lane = POSITION_X[entry.position] ?? [50];
-          const rawX = lane[positionIndex] ?? lane[index % lane.length] ?? 50;
+          const rawX =
+            samePosition.length === 1
+              ? SINGLE_POSITION_X[entry.position] ?? 50
+              : lane[positionIndex] ?? lane[index % lane.length] ?? 50;
           return (
             <PlayerToken
               key={entry.id}
