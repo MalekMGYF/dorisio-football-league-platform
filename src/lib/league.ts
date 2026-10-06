@@ -139,13 +139,19 @@ export function computePlayerStats(
 
   for (const ev of events) {
     if (ev.type === "kickoff" || ev.type === "ht" || ev.type === "ft" || ev.type === "note") continue;
-    if (!ev.playerId) continue;
-    const s = ensure(ev.playerId);
-    if (ev.type === "goal") s.goals += 1;
-    else if (ev.type === "own_goal") s.ownGoals += 1;
-    else if (ev.type === "assist") s.assists += 1;
-    else if (ev.type === "yellow") s.yellow += 1;
-    else if (ev.type === "red") s.red += 1;
+    if (ev.playerId) {
+      const s = ensure(ev.playerId);
+      if (ev.type === "goal") s.goals += 1;
+      else if (ev.type === "own_goal") s.ownGoals += 1;
+      else if (ev.type === "assist") s.assists += 1;
+      else if (ev.type === "yellow") s.yellow += 1;
+      else if (ev.type === "red") s.red += 1;
+    }
+    // A goal can carry its assist directly, which is how the live admin
+    // composer records a goal + final pass in one reliable event.
+    if (ev.type === "goal" && ev.assistPlayerId) {
+      ensure(ev.assistPlayerId).assists += 1;
+    }
   }
 
   for (const match of matches) {

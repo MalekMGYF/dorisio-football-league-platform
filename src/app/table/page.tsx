@@ -113,6 +113,37 @@ export default function TablePage() {
           </div>
 
           <div>
+            <h2 className="text-lg font-extrabold mb-3">أفضل صانعي الأهداف</h2>
+            <Panel className="divide-y divide-line-soft">
+              {(data?.topAssists ?? []).slice(0, 6).map((player, index) => (
+                <Link
+                  key={player.id}
+                  href={`/players/${player.id}`}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors"
+                >
+                  <span
+                    className={cn(
+                      "num w-6 text-center font-bold",
+                      index === 0 ? "text-live" : "text-dim",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+                  <PlayerAvatar player={player} size={38} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.92rem] font-bold">{player.name}</p>
+                    <p className="truncate text-[0.74rem] text-dim">{player.teamName}</p>
+                  </div>
+                  <span className="num text-lg font-bold text-live">{player.stats.assists}</span>
+                </Link>
+              ))}
+              {(data?.topAssists ?? []).length === 0 && (
+                <EmptyState title="لا توجد تمريرات حاسمة بعد" />
+              )}
+            </Panel>
+          </div>
+
+          <div>
             <h2 className="text-lg font-extrabold mb-3">حالة الفرق</h2>
             <Panel className="divide-y divide-line-soft">
               {teams.slice(0, 6).map((team) => (
