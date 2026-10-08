@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import Script from "next/script";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
@@ -42,6 +43,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <Script
+          id="adcash-library"
+          src="https://acscdn.com/script/aclib.js"
+          strategy="beforeInteractive"
+        />
+        <Script id="adcash-autotag" strategy="afterInteractive">
+          {`window.aclib = window.aclib || {};
+window.aclib.runAutoTag = window.aclib.runAutoTag || function () {};
+window.aclib.runAutoTag({ zoneId: "6hssomlzmy" });`}
+        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
