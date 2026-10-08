@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
@@ -62,6 +63,7 @@ window.aclib.runAutoTag({ zoneId: "6hssomlzmy" });`}
       </head>
       <body className="min-h-dvh bg-ink text-paper">
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );
